@@ -4,3 +4,4 @@ config_local.yaml
 env
 *.pyc
 logs
+uw
