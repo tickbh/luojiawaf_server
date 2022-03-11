@@ -12,8 +12,8 @@ services:
     ports:
       - "127.0.0.1:6479:6479"
 
-  django_center_waf:
-    container_name: django_center_waf-docker        # 指定容器的名称
+  luojia_waf:
+    container_name: luojia_waf-docker        # 指定容器的名称
     build:
       context: ../../
       dockerfile: compose/django/Dockerfile
@@ -21,7 +21,7 @@ services:
       - sh
       - -c
       - |
-        nohup python ./task_main.py &
+        nohup python ./reload.py uw/monitor python ./task_main.py &
         uwsgi --ini uwsgi.ini
         /bin/bash -c " while true; do sleep 1; done"
     # command: uwsgi --ini uwsgi.ini
@@ -39,9 +39,9 @@ services:
       - "6987:6987"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
-      - ../../../WebPublish:/app:rw
+      - ../../../luojia_web_publish:/app:rw
     depends_on:
-      - django_waf      
+      - luojia_waf      
     restart: always
 
 networks:
