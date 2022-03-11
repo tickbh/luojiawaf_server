@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+  redis_back_db:
+    image: redis:6.2
+    container_name: redis_back-docker
+    volumes:
+      - ./store/redis/:/data:rw
+      - ../redis.conf:/usr/local/etc/redis/redis.conf
+      - ./store/redis/logs:/logs:rw
+
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - "127.0.0.1:6479:6479"
+
+networks:
+  default:
+    external:
+      name: my-server-network
+
+# docker ps -a | grep "Exited" | awk '{print $1 }'|xargs docker stop
+# docker ps -a | grep "Exited" | awk '{print $1 }'|xargs docker rm
+# docker images|grep none|awk '{print $3 }'|xargs docker rmi
+
+# docker rmi $(docker images -q | awk '/^<none>/ { print $3 }')
+
+
+# docker exec -it django_my_tool-docker /bin/bash

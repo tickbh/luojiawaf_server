@@ -1,0 +1,6 @@
+db.sqlite3
+.vscode
+config_local.yaml
+env
+*.pyc
+logs

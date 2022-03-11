@@ -1,0 +1,15 @@
+asgiref==3.4.1
+django-cors-headers==3.7.0
+pytz==2021.1
+sqlparse==0.4.1
+requests==2.25.1
+redis
+PyYaml
+openpyxl
+threadpool
+Django==3.2.5
+six
+tzlocal
+redlock
+django-redis
+distask
