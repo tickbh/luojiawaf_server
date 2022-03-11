@@ -1,4 +1,4 @@
-import time, logging, os
+import time, logging, os, sys
 
 import threadpool, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LuojiaWaf.settings')
@@ -30,28 +30,15 @@ def statistics_task(times, *args, **kwargs):
         statistics.statistics_request_msg(user.id)
     
 def do_start_task(idx=None):
-    enable_redis = True
+
     client_data = {
-        "t": "mongo",
-        "client_args": {
-            "host": "mongodb://admin:123456@192.168.99.27:27017"
-        },
-        "store_args": {
-            "database": 'testcase_distask', 
-            "schedules": 'schedules', 
-            "jobs": 'jobs',
+        't': 'redis',
+        "client_args":{
+            "host":'redis_back_db', 
+            'port':6479,
+            'db':15, 
         }
     }
-
-    if enable_redis:
-        client_data = {
-            't': 'redis',
-            "client_args":{
-                "host":'redis_back_db', 
-                'port':6479,
-                'db':15, 
-            }
-        }
 
     connection_details=[
         {'host': 'redis_back_db', 'port': 6479, 'db': 15},
@@ -72,10 +59,6 @@ def do_start_task(idx=None):
         if event.code == EVENT_SCHEDULER_START:
             logging.info("start success task event")
         if event.code == EVENT_JOB_ERROR:
-            # logging.info("event {} error".format(event.job_id))
-            # logging.info("exec_type: {}".format(event.exec_type))
-            # logging.info("exec_value: {}".format(event.exec_value))
-            # logging.info("traceback: {}".format(event.traceback))
             import traceback
             traceback.print_tb(event.traceback)
         if event.code == EVENT_JOB_EXECUTED:
@@ -114,6 +97,5 @@ if __name__ == '__main__':
         except threadpool.NoResultsPending:
             break
         
-    # pool.wait()
     logging.warning("finish")
     
