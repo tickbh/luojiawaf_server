@@ -1,4 +1,5 @@
 
+store
 config_local.yaml
 env
 *.pyc

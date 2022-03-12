@@ -17,6 +17,13 @@ pip3 install docker-compose
 进入到compose/full, 运行docker-compose build
 然后运行docker-compose up -d启动程序
 
+#### 本地调试
+安装相应的python环境,
+```
+pip install -r requirements.txt
+```
+运行django和task_main.py
+
 
 #### 参数配置说明
 ```
