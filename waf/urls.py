@@ -22,6 +22,11 @@ urlpatterns = [
     path('get_record_ip_list', views.get_record_ip_list),
     path('add_record_ip_client', views.add_record_ip_client),
     path('del_record_ip_client', views.del_record_ip_client),
+
+    path('get_whiteurl_list', views.get_whiteurl_list),
+    path('add_whiteurl_client', views.add_whiteurl_client),
+    path('del_whiteurl_client', views.del_whiteurl_client),
+    
     
     path('get_ccrule_list', views.get_ccrule_list),
     path('add_ccrule_info', views.add_ccrule_info),
@@ -32,6 +37,7 @@ urlpatterns = [
     path('del_config_info', views.del_config_info),
     
     path('get_error_list', views.get_error_list),
+    path('get_server_infos', views.get_server_infos),
 
     path('get_cc_attck_times', views.get_cc_attck_times),
     path('currentUser', views.currentUser),

@@ -38,6 +38,9 @@ def get_upstream_infos(user_id):
 
 def get_record_ips(user_id):
     return f"{user_id}:all_record_ips"
+
+def get_white_urls(user_id):
+    return f"{user_id}:all_white_urls"
     
 def get_limit_infos(user_id):
     return f"{user_id}:all_limit_infos"

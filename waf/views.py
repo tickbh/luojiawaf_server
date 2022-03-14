@@ -166,6 +166,44 @@ def del_record_ip_client(request):
         "ok": ok,
     })
 
+# 白名单URL
+def get_whiteurl_list(request):
+    user_id = base_utils.get_user_id(request)
+    client = pool_utils.get_redis_cache()
+    infos = client.hgetall(waf_utils.get_white_urls(user_id))
+    return JsonResponse({
+        "success": True,
+        "lists": [{ip:v} for ip, v in infos.items()],
+    })
+
+def add_whiteurl_client(request):
+    user_id = base_utils.get_user_id(request)
+    url, action = base_utils.get_request_data(request, "url", "action")
+    client = pool_utils.get_redis_cache()
+    if not url or not action:
+        return base_utils.ret_err_msg(-1, "参数不正确")
+    
+    client.hset(waf_utils.get_white_urls(user_id), url, action)
+
+    return JsonResponse({
+        "success": True,
+        "url": url,
+    })
+
+def del_whiteurl_client(request):
+    user_id = base_utils.get_user_id(request)
+    url, _ = base_utils.get_request_data(request, "url", "_")
+    if not url:
+        return base_utils.ret_err_msg(-1, "参数不正确")
+
+    client = pool_utils.get_redis_cache()
+
+    ok = client.hdel(waf_utils.get_white_urls(user_id), url)
+    return JsonResponse({
+        "success": True,
+        "ok": ok,
+    })
+
 # CC规则访问记录
 def get_ccrule_list(request):
     client = pool_utils.get_redis_cache()
@@ -291,6 +329,26 @@ def get_error_list(request):
         "success": True,
         "datas": datas,
     })
+    
+def get_server_infos(request):
+    name, is_hour = base_utils.get_request_data(request, "name", "is_hour")
+    if not name:
+        return base_utils.ret_err_msg(-1, "参数不正确")
+
+    client = pool_utils.get_redis_client_cache(base_utils.get_user_id(request), name)
+    if not client:
+        return base_utils.ret_err_msg(-1, "该高防不存在")
+
+    cpu_infos = client.lrange("all_cpu_info", -180, -1)
+    network_infos = client.lrange("all_network_info", -180, -1)
+    mem_infos = client.lrange("all_mem_info", -180, -1)
+
+    return JsonResponse({
+        "success": True,
+        "cpu_infos": cpu_infos,
+        "network_infos": network_infos,
+        "mem_infos": mem_infos,
+    })
 
 # cc攻击数
 def get_cc_attck_times(request):
@@ -379,7 +437,7 @@ def add_upstream_client(request):
     })
 
 def del_upstream_client(request):
-    name = base_utils.get_request_data(request, "name")
+    name, _ = base_utils.get_request_data(request, "name", "_")
     if not name:
         return base_utils.ret_err_msg(-1, "参数不正确")
 

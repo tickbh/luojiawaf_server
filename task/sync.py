@@ -69,6 +69,23 @@ def sync_all_records_ip_infos(user_id):
             import traceback
             traceback.print_exc()
 
+            
+def sync_all_whiteurl_infos(user_id):
+    base_client = pool_utils.get_redis_cache()
+    all_white_urls = base_client.hgetall(waf_utils.get_white_urls(user_id))
+    if len(all_white_urls) == 0:
+        return
+
+    for client in pool_utils.iter_redis_client_cache_data(user_id):
+        try:
+            pipe = client.pipeline()
+            pipe.hset("all_white_urls_bak", mapping=all_white_urls)
+            pipe.rename("all_white_urls_bak", "all_white_urls")
+            ok = pipe.execute()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
 def sync_all_ssl_infos(user_id):
     base_client = pool_utils.get_redis_cache()
     all_ssl_infos = base_client.hgetall(waf_utils.get_ssl_infos(user_id))
@@ -106,5 +123,6 @@ def sync_all_config_infos(user_id):
 def sync_to_client(user_id):
     sync_all_upstream_infos(user_id)
     sync_all_records_ip_infos(user_id)
+    sync_all_whiteurl_infos(user_id)
     sync_all_config_infos(user_id)
     sync_all_ssl_infos(user_id)
