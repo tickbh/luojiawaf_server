@@ -81,7 +81,7 @@ def get_client_detail(request):
 def get_block_list(request):
     user_id = base_utils.get_user_id(request)
     client = pool_utils.get_redis_cache()
-    infos = client.hgetall(waf_utils.get_client_infos(user_id))
+    infos = base_utils.mapgetall(client, waf_utils.get_client_infos(user_id))
     return JsonResponse({
         "success": True,
         "lists": [v for _, v in infos.items()],
@@ -132,7 +132,7 @@ def del_block_client(request):
 def get_record_ip_list(request):
     user_id = base_utils.get_user_id(request)
     client = pool_utils.get_redis_cache()
-    infos = client.hgetall(waf_utils.get_record_ips(user_id))
+    infos = base_utils.mapgetall(client,waf_utils.get_record_ips(user_id))
     return JsonResponse({
         "success": True,
         "lists": [{ip:v} for ip, v in infos.items()],
@@ -170,7 +170,7 @@ def del_record_ip_client(request):
 def get_whiteurl_list(request):
     user_id = base_utils.get_user_id(request)
     client = pool_utils.get_redis_cache()
-    infos = client.hgetall(waf_utils.get_white_urls(user_id))
+    infos = base_utils.mapgetall(client, waf_utils.get_white_urls(user_id))
     return JsonResponse({
         "success": True,
         "lists": [{ip:v} for ip, v in infos.items()],
@@ -207,7 +207,7 @@ def del_whiteurl_client(request):
 # CC规则访问记录
 def get_ccrule_list(request):
     client = pool_utils.get_redis_cache()
-    infos = client.hgetall(waf_utils.get_rulelimit_infos(base_utils.get_user_id(request)))
+    infos = base_utils.mapgetall(client, waf_utils.get_rulelimit_infos(base_utils.get_user_id(request)))
     return JsonResponse({
         "success": True,
         "lists": [v for _, v in infos.items()],
@@ -255,7 +255,7 @@ def del_ccrule_info(request):
 #配置文件
 def get_config_list(request):
     client = pool_utils.get_redis_cache()
-    infos = client.hgetall(waf_utils.get_config_infos(base_utils.get_user_id(request)))
+    infos = base_utils.mapgetall(client, waf_utils.get_config_infos(base_utils.get_user_id(request)))
     return JsonResponse({
         "success": True,
         "lists": [{k: v} for k, v in infos.items()],
@@ -374,7 +374,7 @@ def get_upstream_detail(request):
     user_id = base_utils.get_user_id(request)
     keys = [waf_utils.get_upstream_all_cost(user_id, base_utils.get_last_hour_idx()), waf_utils.get_upstream_all_cost(user_id, base_utils.get_last_hour_idx() - 1)]
     
-    values = [client.hgetall(key) for key in keys]
+    values = [base_utils.mapgetall(client, key) for key in keys]
     upstream_infos = {}
     
     for _, value_map in enumerate(values):
@@ -399,7 +399,7 @@ def get_upstream_list(request):
     client = pool_utils.get_redis_cache()
     user_id = base_utils.get_user_id(request)
     
-    infos = client.hgetall(waf_utils.get_upstream_infos(user_id))
+    infos = base_utils.mapgetall(client, waf_utils.get_upstream_infos(user_id))
     values = [{name: v} for name, v in infos.items()]
 
     return JsonResponse({
@@ -453,7 +453,7 @@ def get_ssl_list(request):
     user_id = base_utils.get_user_id(request)
     client = pool_utils.get_redis_cache()
 
-    infos = client.hgetall(waf_utils.get_ssl_infos(user_id))
+    infos = base_utils.mapgetall(client, waf_utils.get_ssl_infos(user_id))
     values = [{name: v} for name, v in infos.items()]
 
     return JsonResponse({
@@ -613,7 +613,7 @@ def get_client_ip_url_times(request):
     client = pool_utils.get_redis_cache()
 
     key = "client_ip_times:" + ip
-    datas = client.hgetall(key)
+    datas = base_utils.mapgetall(client, key)
     return JsonResponse({
         "success": True,
         "datas": datas,

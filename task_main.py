@@ -14,30 +14,30 @@ import threadpool
 from common import log_utils, config_utils
 
 def sync_request_msg_task(times, *args, **kwargs):
-    logging.warning("sync_request_msg_task")
+    logging.warning("start sync_request_msg_task")
     for user in User.objects.filter():
         sync.sync_request_msg(user.id)
         sync.sync_to_client(user.id)
+    logging.warning("end sync_request_msg_task")
 
 def analysis_task(times, *args, **kwargs):
-    logging.warning("analysis_request_msg")
+    logging.warning("start analysis_task")
     for user in User.objects.filter():
         analysis.analysis_request_msg(user.id)
+    logging.warning("end analysis_task")
 
 def statistics_task(times, *args, **kwargs):
-    logging.warning("statistics_request_msg")
+    logging.warning("start statistics_task")
     for user in User.objects.filter():
         statistics.statistics_request_msg(user.id)
+    logging.warning("end statistics_task")
     
 def do_start_task(idx=None):
 
+    task_redis = config_utils.get_task_redis_db()
     client_data = {
         't': 'redis',
-        "client_args":{
-            "host":'redis_back_db', 
-            'port':6479,
-            'db':15, 
-        }
+        "client_args":task_redis[0]
     }
 
     connection_details=[
@@ -51,8 +51,8 @@ def do_start_task(idx=None):
     }
 
     scheduler = create_scheduler(client_data, lock_data, serialize="pickle", backgroud=False, limit=1, maxwait=5)
-    scheduler.add_job(Job(sync_request_msg_task, "interval", (), group="11", subgroup="", seconds=3))
-    scheduler.add_job(Job(analysis_task, "interval", (), group="11", subgroup="", seconds=3))
+    scheduler.add_job(Job(sync_request_msg_task, "interval", (), group="11", subgroup="", seconds=10))
+    scheduler.add_job(Job(analysis_task, "interval", (), group="11", subgroup="", seconds=6))
     scheduler.add_job(Job(statistics_task, "interval", (), group="11", subgroup="", seconds=6))
 
     def job_execute(event):

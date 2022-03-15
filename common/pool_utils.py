@@ -1,7 +1,7 @@
 
 
 import redis, time, json
-from . import config_utils, waf_utils
+from . import config_utils, waf_utils, base_utils
 
 _redis_cache_pool = None;
 def get_redis_cache():
@@ -21,7 +21,7 @@ def get_redis_client_cache_data(user_id):
         _redis_last_read_time[user_id] = time.time()
         _redis_online_config_cache[user_id] = {}
         _redis_config_cache_names[user_id] = {}
-        all_caches = base_client.hgetall(waf_utils.get_client_infos(user_id))
+        all_caches = base_utils.mapgetall(base_client, waf_utils.get_client_infos(user_id))
         for (k, v) in all_caches.items():
             try:
                 data = json.loads(v)
@@ -61,18 +61,6 @@ def get_redis_data_cache(user_id, name):
     
     user_cache = _redis_config_cache_names.get(user_id, {})
     return user_cache.get(name, {})
-
-# _redis_client_cache = {}
-# def get_redis_client_cache(idx):
-#     if _redis_client_cache.get(idx) == None:
-#         client_list = config_utils.get_redis_client()
-#         if len(client_list) < idx:
-#             return None
-#         pool = redis.ConnectionPool.from_url(client_list[idx], decode_responses=True)
-#         _redis_client_cache[idx] = pool
-    
-#     pool = _redis_client_cache[idx]
-#     return redis.Redis(connection_pool=pool)
 
 def do_client_command(user_id, *args, **options):
     for client in iter_redis_client_cache_data(user_id):

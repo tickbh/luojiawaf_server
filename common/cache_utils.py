@@ -21,7 +21,7 @@ def get_cache_by_key(user_id, key, default=None):
     cache_table[user_id] = {}
     _cache_time_last_read = time.time()
     redis = pool_utils.get_redis_cache()
-    datas = redis.hgetall(waf_utils.get_config_infos(user_id))
+    datas = base_utils.mapgetall(redis, waf_utils.get_config_infos(user_id))
     for (k, v) in datas.items():
         cache_table[user_id][k] = v
     return cache_table[user_id].get(key, default)

@@ -11,7 +11,7 @@ def statistics_request_msg(user_id):
 
     for client in pool_utils.iter_redis_client_cache_data(user_id):
         try:
-            upstream_cost = client.hgetall("upstream_all_cost")
+            upstream_cost = base_utils.mapgetall(client, "upstream_all_cost")
             client.delete("upstream_all_cost")
             pipe = base_client.pipeline()
             key = waf_utils.get_upstream_all_cost(user_id, base_utils.get_last_hour_idx())
@@ -27,7 +27,7 @@ def statistics_request_msg(user_id):
                 base_client.incrby(f"{user_id}:{cc_key}", cc_attck_times)
                 client.delete(cc_key)
 
-            normal_cost = client.hgetall("normal_all_cost")
+            normal_cost = base_utils.mapgetall(client, "normal_all_cost")
             client.delete("normal_all_cost")
 
             pipe = base_client.pipeline()

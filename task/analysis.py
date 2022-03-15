@@ -25,7 +25,7 @@ def analysis_request_msg(user_id):
     global limitCacheTime, limitTables
     base_client = pool_utils.get_redis_cache()
     if time.time() - limitCacheTime > 60:
-        limitkeys = base_client.hgetall(waf_utils.get_rulelimit_infos(user_id))
+        limitkeys = base_utils.mapgetall(base_client, waf_utils.get_rulelimit_infos(user_id))
         limitTables = {}
         limitCacheTime = time.time()
         for (k, v) in limitkeys.items():
@@ -45,7 +45,7 @@ def analysis_request_msg(user_id):
                 traceback.print_exc()
                 break
 
-    all_news = base_client.hgetall("new_client_maps")
+    all_news = base_utils.mapgetall(base_client, "new_client_maps")
     base_client.delete("new_client_maps")
 
     if len(all_news) == 0:
@@ -99,7 +99,7 @@ def analysis_request_msg(user_id):
                                 (not_wait_count / all_count))
             continue
 
-        ip_url_times = base_client.hgetall("client_ip_times:" + k)
+        ip_url_times = base_utils.mapgetall(base_client, "client_ip_times:" + k)
         all_visit_times = 0
         last_visit_counts = ip_url_times.get(last_url or "",  0)
         max_request_times = 0

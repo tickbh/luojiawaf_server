@@ -4,7 +4,7 @@ import hashlib
 import json
 import random
 import re
-import time
+import time, logging
 
 from django.http import request
 from django.http.response import JsonResponse
@@ -37,7 +37,35 @@ def super_transfer(_type, value, default_return=0, is_log=False):
     except:
         result = default_return
         if is_log:
-            logger.error('将{value}转换为{_type}类型时失败'.format(value=value, _type=_type))
+            logging.error('将{value}转换为{_type}类型时失败'.format(value=value, _type=_type))
+
+    return result
+
+    
+def safe_str(value, default_return="", is_log=False) -> str:
+    '''
+    提供安全的类型转换函数,将value转换为int类型
+    :param value:需要被转换的数据
+    :param default_return: 转换失败时的返回值
+    :param is_log:是否记录日志
+    :return:
+    '''
+    if not value:
+        return ""
+    if type(value) == str:
+        return value
+    try:
+        if type(value) == bytes:
+            return bytes.decode(value, "utf-8")
+        if type(value) == dict:
+            return json.dumps(value)
+        if type(value) == list:
+            return json.dumps(value)
+        result = str(value)
+    except:
+        result = default_return
+        if is_log:
+            logging.error('将{value}转换为{_type}类型时失败'.format(value=value))
 
     return result
 
@@ -64,6 +92,12 @@ def safe_float(value, default_return=0, is_log=False):
 
 def scankeys(redis, match=None, count=2000, _type=None):
     return [v for v in redis.scan_iter(match, count, _type)]
+    
+def mapgetall(redis, key, count=2000):
+    dict = {}
+    for k, v in redis.hscan_iter(key, count= count):
+        dict[k] = v
+    return dict
 
 rand_array = [
         '0', '1', '2', '3', '4', '5', '6', '7',
@@ -210,3 +244,8 @@ def get_user_id(request):
     if hasattr(request, "user"):
         return request.user.id
     return 0
+
+def calc_md5(data):
+    md = hashlib.md5()
+    md.update(data.encode(encoding='UTF-8')) 
+    return md.hexdigest()
