@@ -30,7 +30,7 @@ def get_cache_wait_forbidden_ratio(user_id):
     return base_utils.safe_float(get_cache_by_key(user_id, "not_wait_forbidden_ratio", 0.9))
 
 def get_cache_wait_forbidden_min_len(user_id):
-    return base_utils.safe_int(get_cache_by_key(user_id, "not_wait_forbidden_min_len", 20)) 
+    return base_utils.safe_int(get_cache_by_key(user_id, "not_wait_forbidden_min_len", 30)) 
 
 def get_min_all_visit_times(user_id):
     return base_utils.safe_int(get_cache_by_key(user_id, "min_all_visit_times", 20))

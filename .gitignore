@@ -5,3 +5,4 @@ env
 *.pyc
 logs
 uw
+db.sqlite3
