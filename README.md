@@ -24,6 +24,26 @@ pip install -r requirements.txt
 ```
 运行django和task_main.py
 
+#### 产品实现功能
+- 可自动对CC进行拉黑
+- 可在后台配置限制访问频率,URI访问频率
+- 可后台封禁IP,记录IP访问列表
+- 可统计服务端错误内容500错误等
+- 可查看请求耗时列表, 服务器内部负载情况
+- 可在后台配置负载均衡, 添加域名转发, 无需重启服务器
+- 可在后台配置SSL证书, 无需重启服务器
+
+
+### 产品展示图
+##### 主页
+![](./screenshot/main.png)
+##### 配置
+![](./screenshot/config.png)
+##### 负载均衡
+![](./screenshot/upstream.png)
+##### SSL证书
+![](./screenshot/ssl.png)
+
 
 #### 参数配置说明
 ```
@@ -52,16 +72,6 @@ url_args_attack urls参数攻击请求on 为开启
 
 random_record_value 随机记录的值, 100%则填10000
 ```
-
-### 产品展示图
-##### 主页
-![](./screenshot/main.png)
-##### 配置
-![](./screenshot/config.png)
-##### 负载均衡
-![](./screenshot/upstream.png)
-##### SSL证书
-![](./screenshot/ssl.png)
 
 ## 💬 社区交流
 
