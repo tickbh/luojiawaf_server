@@ -8,6 +8,7 @@ redis_client:
   - redis://redis_back_db:6479/1
 
 task_redis:
-  host: redis_back_db
-  port: 6479
-  db: 15
+  -
+    host: redis_back_db
+    port: 6479
+    db: 15
