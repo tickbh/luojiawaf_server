@@ -43,6 +43,7 @@ urlpatterns = [
     path('currentUser', views.currentUser),
     path('outLogin', views.outLogin),
     path('modify_password', views.modify_password),
+    path('modify_project_name', views.modify_project_name),
 
     path('get_forbidden_ip_list', views.get_forbidden_ip_list),
     path('search_forbidden_ip', views.search_forbidden_ip),

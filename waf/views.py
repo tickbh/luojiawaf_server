@@ -1,3 +1,4 @@
+from http import client
 from django.shortcuts import render
 from django.http import response
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -811,11 +812,14 @@ def get_online_client_ips(request):
 
 def currentUser(request):
     user = request.user
+    client = pool_utils.get_redis_cache()
+    project_name = client.get(waf_utils.get_project_name(base_utils.get_user_id(request))) or ""
     return JsonResponse({
         "success": True,
         "data": {
             "name": user.username,
             "access": "admin",
+            "project_name": project_name,
         }
     })
 
@@ -842,4 +846,14 @@ def modify_password(request):
         "success": True,
     })
 
+
+def modify_project_name(request):
+    project_name, _ = base_utils.get_request_data(request, "project_name", "_")
+    client = pool_utils.get_redis_cache()
+    client.set(waf_utils.get_project_name(base_utils.get_user_id(request)), project_name)
+    return JsonResponse({
+        "data": {},
+        "project_name": project_name,
+        "success": True,
+    })
     

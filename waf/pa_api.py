@@ -43,13 +43,16 @@ def login(request):
         return base_utils.ret_err_msg(-1, "用户或密码不正确", errData)
     auth.login(request, user_obj)
 
+    project_name = client.get(waf_utils.get_project_name(user_obj.id)) or ""
+
     return JsonResponse({
         "token": request.session.session_key,
         "user": user,
         "success": 0,
         "status": "ok",
         "type": "admin",
-        "currentAuthority": user
+        "currentAuthority": user,
+        "project_name": project_name,
     })
 
 urlpatterns = [

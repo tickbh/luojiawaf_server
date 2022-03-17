@@ -67,6 +67,6 @@ def get_visit_rank_aver_score(user_id):
 
 def get_online_client_ips(user_id):
     return f"{user_id}:online_client_ips"
-
-
     
+def get_project_name(user_id):
+    return f"{user_id}:project_name"
