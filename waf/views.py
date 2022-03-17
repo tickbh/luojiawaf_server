@@ -141,12 +141,14 @@ def get_record_ip_list(request):
 
 def add_record_ip_client(request):
     user_id = base_utils.get_user_id(request)
-    ip, action = base_utils.get_request_data(request, "ip", "action")
+    ip, action, oriip = base_utils.get_request_data(request, "ip", "action", "oriip")
     client = pool_utils.get_redis_cache()
     if not ip or not action:
         return base_utils.ret_err_msg(-1, "参数不正确")
     
     client.hset(waf_utils.get_record_ips(user_id), ip, action)
+    if oriip and oriip != ip:
+        client.hdel(waf_utils.get_record_ips(user_id), oriip)
 
     return JsonResponse({
         "success": True,
@@ -179,12 +181,14 @@ def get_whiteurl_list(request):
 
 def add_whiteurl_client(request):
     user_id = base_utils.get_user_id(request)
-    url, action = base_utils.get_request_data(request, "url", "action")
+    url, action, oriurl = base_utils.get_request_data(request, "url", "action", "oriurl")
     client = pool_utils.get_redis_cache()
     if not url or not action:
         return base_utils.ret_err_msg(-1, "参数不正确")
     
     client.hset(waf_utils.get_white_urls(user_id), url, action)
+    if oriurl and oriurl != url:
+        client.hdel(waf_utils.get_white_urls(user_id), oriurl)
 
     return JsonResponse({
         "success": True,
@@ -431,6 +435,9 @@ def add_upstream_client(request):
 
     info = json.dumps({"ip": ip, "port": port, "host": host, "name":name, "fail": fail or 3, "fail_timeout": fail_timeout or 180, "weight": weight or 100})
     client.hset(waf_utils.get_upstream_infos(user_id), name, info)
+
+    if oriname and oriname != name:
+        client.hdel(waf_utils.get_upstream_infos(user_id), oriname)
 
     return JsonResponse({
         "success": True,
