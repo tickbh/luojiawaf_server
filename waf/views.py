@@ -809,18 +809,20 @@ def get_online_client_ips(request):
     page = max(base_utils.safe_int(page, 1), 1) 
     pagecount = base_utils.safe_int(pagecount, 20)
     user_id = base_utils.get_user_id(request)
-    startTime = time.time() - 2.5 * 60
+    startTime = int(time.time()) - 5 * 60
+    five_count = client.zcount(waf_utils.get_online_client_ips(user_id), startTime, "+inf")
+    startTime = int(time.time()) - 2.5 * 60
     count = client.zcount(waf_utils.get_online_client_ips(user_id), startTime, "+inf")
     datas = []
     if count != 0:
         startIdx = min((page - 1) * pagecount, count) 
         endIdx = min(page * pagecount, count)
-
         datas = client.zrange(waf_utils.get_online_client_ips(user_id), startIdx, endIdx - 1, desc=True, withscores=True)
 
     return JsonResponse({
         "success": True,
         "datas": datas,
+        "five_count": five_count,
         "count": count
     })
 
