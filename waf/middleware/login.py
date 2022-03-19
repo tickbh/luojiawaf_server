@@ -19,7 +19,7 @@ def pretty_print_post(req):
     ))
 
 NO_CHECK_ARRAY = [
-    '/waf/login',
+    '/waf/login', '/waf/django_admin/'
 ]
 
 class LoginMiddleware:
@@ -30,6 +30,7 @@ class LoginMiddleware:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
+        
         if not request.path_info.startswith('/admin'):
             pretty_print_post(request)
         
