@@ -1,7 +1,7 @@
 import math
 
 import redis
-from common import base_utils, config_utils, pool_utils, waf_utils
+from common import base_utils, config_utils, pool_utils, waf_utils, cache_utils
 
 
 def sync_request_msg(user_id):
@@ -18,7 +18,7 @@ def sync_request_msg(user_id):
                 pipe = base_client.pipeline()
                 for (k1, v1) in client_access_times.items():
                     pipe.hincrby("client_ip_times:" + k, k1, v1)
-                pipe.expire("client_ip_times:" + k, 60 * 60)
+                pipe.expire("client_ip_times:" + k, cache_utils.get_client_ip_times_timeout(user_id))
                 ok = pipe.execute()
 
                 if ok:
@@ -30,7 +30,7 @@ def sync_request_msg(user_id):
                         break
 
                     base_client.rpush("client_ip_list:" + k, *visit_list)
-                    base_client.expire("client_ip_times:" + k, 10 * 60)
+                    base_client.expire("client_ip_times:" + k, cache_utils.get_client_ip_times_timeout(user_id))
 
             if len(all_news) > 0:
                 base_client.hmset("new_client_maps", all_news)

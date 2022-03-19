@@ -43,3 +43,7 @@ def get_max_visit_ratio(user_id):
 
 def get_default_forbidden_time(user_id):
     return base_utils.safe_int(get_cache_by_key(user_id, "default_forbidden_time", 600))
+    
+def get_client_ip_times_timeout(user_id):
+    return base_utils.safe_int(get_cache_by_key(user_id, "default_ip_times_timeout", 3600 * 24))
+    

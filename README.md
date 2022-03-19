@@ -70,6 +70,7 @@ white_url_check 白url检查 on 为开启
 
 post_attack_check post参数攻击请求on 为开启
 url_args_attack urls参数攻击请求on 为开启
+default_ip_times_timeout 默认记录访问次数时长
 
 random_record_value 随机记录的值, 100%则填10000
 ```

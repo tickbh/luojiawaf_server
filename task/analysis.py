@@ -81,7 +81,7 @@ def analysis_request_msg(user_id):
                             base_client.expire(limit_key, 5 * rule["cyclical"])
                             if count > rule["limitNum"]:
                                 is_forbidden = True
-                                waf_utils.do_fobidden_ip(user_id, k, "over limit num" + rule["url"], rule.get("time"))
+                                waf_utils.do_fobidden_ip(user_id, k, "超过次数限制:" + rule["url"], rule.get("time"))
                                 break
                 if is_forbidden:
                     break
@@ -95,8 +95,7 @@ def analysis_request_msg(user_id):
             continue
         ratio = cache_utils.get_cache_wait_forbidden_ratio(user_id)
         if not_wait_count / all_count > ratio:
-            waf_utils.do_fobidden_ip(user_id, k, "not wait count ratio %f may cc " %
-                                (not_wait_count / all_count))
+            waf_utils.do_fobidden_ip(user_id, k, f"同一条请求未完成又重复请求占比 {not_wait_count / all_count}, 总次数 {all_count}")
             continue
 
         ip_url_times = base_utils.mapgetall(base_client, "client_ip_times:" + k)
@@ -118,6 +117,5 @@ def analysis_request_msg(user_id):
         ratio = all_max_times / all_visit_times
         if all_visit_times > cache_utils.get_min_all_visit_times(user_id) and ratio > cache_utils.get_max_visit_ratio(user_id):
             
-            waf_utils.do_fobidden_ip(user_id, k, " pre %d(%d/%d) request over %f so forbidden" %
-                                (cache_utils.get_max_visit_idx_num(user_id), all_max_times, all_visit_times, ratio))
+            waf_utils.do_fobidden_ip(user_id, k, f"前{cache_utils.get_max_visit_idx_num(user_id)}种请求({all_max_times}/{all_visit_times}) 请求占比超过{ratio}")
 
