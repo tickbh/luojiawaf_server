@@ -28,6 +28,8 @@ services:
         # python manage.py runserver 0:6988
     environment:
       TZ : 'Asia/Shanghai'
+    ports:
+      - "127.0.0.1:6988:6988"
     env_file:
       - ../.env
     volumes:
