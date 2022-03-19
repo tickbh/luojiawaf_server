@@ -11,6 +11,7 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
     ports:
       - "127.0.0.1:6479:6479"
+    restart: always
 
   luojia_waf:
     container_name: luojia_waf-docker        # 指定容器的名称
