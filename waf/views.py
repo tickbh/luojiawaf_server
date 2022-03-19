@@ -1,3 +1,4 @@
+from array import array
 from http import client
 from django.shortcuts import render
 from django.http import response
@@ -622,9 +623,15 @@ def get_client_ip_url_times(request):
 
     key = "client_ip_times:" + ip
     datas = base_utils.mapgetall(client, key)
+    array = []
+    for url, times in datas.items():
+        array.append({"u": url, "t": base_utils.safe_int(times) or 0})
+
+    array.sort(key = lambda v: -v["t"])
+
     return JsonResponse({
         "success": True,
-        "datas": datas,
+        "datas": array[:20],
     })
 
 def get_client_random_visits(request):

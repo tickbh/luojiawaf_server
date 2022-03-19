@@ -28,6 +28,8 @@ services:
         # python manage.py runserver 0:6988
     environment:
       TZ : 'Asia/Shanghai'
+    env_file:
+      - ../.env
     volumes:
       - ../../:/app:rw
     restart: always

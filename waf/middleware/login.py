@@ -19,7 +19,7 @@ def pretty_print_post(req):
     ))
 
 NO_CHECK_ARRAY = [
-    '/waf/login', '/waf/django_admin/'
+    '/waf/login', '/waf/luojia_admin/'
 ]
 
 class LoginMiddleware:
