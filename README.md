@@ -6,6 +6,10 @@
 > 从而无法达到有效的防止cc的攻击, 攻击者可分散攻击而让单台无法分析出其是否是恶意的攻击
 > 所以需要有中台的分析,才能有效的判断是否为恶意IP,从而进行限制
 
+### 系统组成部分
+>系统由[节点服务器 luojiawaf_lua(nginx+lua) ](https://gitee.com/tickbh/luojiawaf_lua)和
+[中控服务器后端 luajiawaf_server(django) ](https://gitee.com/tickbh/luojiawaf_server)组成, 数据由用户在中控服务器修改,然后由中控服务器同步到节点服务器, 数据更新完毕
+
 ### 安装docker
 ```
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
