@@ -83,6 +83,23 @@ default_ip_times_timeout 默认记录访问次数时长
 random_record_value 随机记录的值, 100%则填10000
 ```
 
+### 相关连接
+> 国内访问
+
+[前台 luojiawaf_lua(nginx+lua) ](https://gitee.com/tickbh/luojiawaf_lua)
+
+[后台前端 luajiawaf_web(ant.design) ](https://gitee.com/tickbh/luojiawaf_web)
+
+[后台后端 luajiawaf_server(django) ](https://gitee.com/tickbh/luojiawaf_server)
+
+> GITHUB
+
+[前台 luojiawaf_lua(nginx+lua) ](https://github.com/tickbh/luojiawaf_lua)
+
+[后台前端 luajiawaf_web(ant.design) ](https://github.com/tickbh/luojiawaf_web)
+
+[后台后端 luajiawaf_server(django) ](https://github.com/tickbh/luojiawaf_server)
+
 ## 💬 社区交流
 
 ##### QQ交流群
