@@ -37,7 +37,11 @@ def do_start_task(idx=None):
     task_redis = config_utils.get_task_redis_db()
     client_data = {
         't': 'redis',
-        "client_args":task_redis[0]
+        "client_args":task_redis[0],
+        "store_args": {
+            "run_times_key": 'distask_times_luojia',
+            "jobs_key": 'distask_jobs_luojia'
+        }
     }
 
     connection_details=[

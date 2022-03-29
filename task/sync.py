@@ -42,6 +42,8 @@ def sync_all_upstream_infos(user_id):
     base_client = pool_utils.get_redis_cache()
 
     upstream_infos = base_utils.mapgetall(base_client, waf_utils.get_upstream_infos(user_id))
+    if not upstream_infos:
+        return;
     cache_md5 = base_utils.calc_md5(base_utils.safe_str(upstream_infos))
     for client in pool_utils.iter_redis_client_cache_data(user_id):
         try:
