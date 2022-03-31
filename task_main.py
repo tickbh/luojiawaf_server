@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from distask import create_scheduler, register_job
 from distask import util, Job
 from distask.events import EVENT_SCHEDULER_START, EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
-from task import sync, analysis, statistics
+from task import sync, analysis, statistics, important
 import threadpool
 
 from common import log_utils, config_utils
@@ -35,7 +35,7 @@ def statistics_task(times, *args, **kwargs):
 def important_task(times, *args, **kwargs):
     logging.warning("start important_task")
     for user in User.objects.filter():
-        statistics.statistics_request_msg(user.id)
+        important.important_request_msg(user.id)
     logging.warning("end important_task")
     
 def do_start_task(idx=None):
