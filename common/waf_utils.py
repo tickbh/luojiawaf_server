@@ -1,7 +1,7 @@
 import time
-from common import pool_utils, cache_utils
+from common import pool_utils, cache_utils, base_utils
 
-def do_fobidden_ip(user_id, ip, reason, timeout=None):
+def do_forbidden_ip(user_id, ip, reason, timeout=None):
     if not timeout:
         timeout = cache_utils.get_default_forbidden_time(user_id)
     pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"add|{timeout}")
@@ -9,6 +9,33 @@ def do_fobidden_ip(user_id, ip, reason, timeout=None):
     base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
     base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
 
+def do_captcha_ip(user_id, ip, captcha_char, captcha_img, reason, timeout=None):
+    if not timeout:
+        timeout = cache_utils.get_default_forbidden_time(user_id)
+
+    captcha_key = base_utils.calc_md5(f"{captcha_char}_{time.time()}")
+
+    pool_utils.do_client_command(user_id, "set", f"result_{captcha_key}", captcha_char, "EX", timeout + 100)
+    pool_utils.do_client_command(user_id, "set", f"image_{captcha_key}", captcha_img, "EX", timeout + 60)
+    
+    pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"captcha|{timeout}|{captcha_key}")
+
+    base_client = pool_utils.get_redis_cache()
+    base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
+    base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
+
+def trigger_forbidden_action(user_id, ip, reason, timeout=None):
+    base_client = pool_utils.get_redis_cache()
+    #刚刚被加白, 暂时不拉黑
+    if base_client.get(get_ip_allow(user_id, ip)) == 1:
+        return
+
+    if cache_utils.get_trigger_forbidden_action(user_id) == "captcha":
+        from common import captcha_utils
+        captcha_char, captcha_img = captcha_utils.gen_random_image()
+        do_captcha_ip(user_id, ip, captcha_char, captcha_img, reason, timeout)
+    else:
+        do_forbidden_ip(user_id, ip, reason, timeout)
     
 def do_del_fobidden_ip(user_id, ip_list):
     new_ip_list = []
@@ -70,3 +97,6 @@ def get_online_client_ips(user_id):
     
 def get_project_name(user_id):
     return f"{user_id}:project_name"
+
+def get_ip_allow(user_id, ip):
+    return f"{user_id}:{ip}:allow"

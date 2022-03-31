@@ -47,3 +47,7 @@ def get_default_forbidden_time(user_id):
 def get_client_ip_times_timeout(user_id):
     return base_utils.safe_int(get_cache_by_key(user_id, "default_ip_times_timeout", 3600 * 24))
     
+# forbidden 直接封禁默认方式, captcha 验证码模式
+def get_trigger_forbidden_action(user_id):
+    return get_cache_by_key(user_id, "forbidden_action", "forbidden")
+    

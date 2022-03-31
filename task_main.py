@@ -31,6 +31,12 @@ def statistics_task(times, *args, **kwargs):
     for user in User.objects.filter():
         statistics.statistics_request_msg(user.id)
     logging.warning("end statistics_task")
+
+def important_task(times, *args, **kwargs):
+    logging.warning("start important_task")
+    for user in User.objects.filter():
+        statistics.statistics_request_msg(user.id)
+    logging.warning("end important_task")
     
 def do_start_task(idx=None):
 
@@ -55,9 +61,11 @@ def do_start_task(idx=None):
     }
 
     scheduler = create_scheduler(client_data, lock_data, serialize="pickle", backgroud=False, limit=1, maxwait=5)
-    scheduler.add_job(Job(sync_request_msg_task, "interval", (), group="11", subgroup="", seconds=10))
-    scheduler.add_job(Job(analysis_task, "interval", (), group="11", subgroup="", seconds=6))
-    scheduler.add_job(Job(statistics_task, "interval", (), group="11", subgroup="", seconds=6))
+    scheduler.add_job(Job(sync_request_msg_task, "interval", (), group="", subgroup="", seconds=10))
+    scheduler.add_job(Job(analysis_task, "interval", (), group="", subgroup="", seconds=6))
+    scheduler.add_job(Job(statistics_task, "interval", (), group="", subgroup="", seconds=6))
+
+    scheduler.add_job(Job(important_task, "interval", (), group="", subgroup="", seconds=1))
 
     def job_execute(event):
         if event.code == EVENT_SCHEDULER_START:

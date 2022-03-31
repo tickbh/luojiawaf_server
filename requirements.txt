@@ -13,3 +13,4 @@ tzlocal
 redlock
 django-redis
 distask
+captcha

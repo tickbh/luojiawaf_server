@@ -7,7 +7,7 @@ from django.contrib import auth
 import time, json, re
 import redis, requests
 
-from common import pool_utils, base_utils, waf_utils, cache_utils
+from common import pool_utils, base_utils, waf_utils, cache_utils, captcha_utils
 
 def index(request):
     return HttpResponse('welcome !!!!!')
@@ -559,7 +559,7 @@ def add_forbidden_ip(request):
 
     for ip in list:
         ip = ip.strip()
-        waf_utils.do_fobidden_ip(base_utils.get_user_id(request), ip, "forbidden by admin")
+        waf_utils.trigger_forbidden_action(base_utils.get_user_id(request), ip, "forbidden by admin")
 
     return JsonResponse({
         "success": True,
