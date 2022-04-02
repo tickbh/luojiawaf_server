@@ -22,8 +22,8 @@ def important_request_msg(user_id):
                 ip = value.get("ip")
                 timeout = cache_utils.get_default_forbidden_time(user_id)
                 if action == "captcha_ok":
-                    base_client.set(waf_utils.get_ip_allow(user_id, ip), 1, ex=600)
-                    pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"allow|{timeout}")
+                    base_client.set(waf_utils.get_ip_nocheck(user_id, ip), 1, ex=600)
+                    pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"nocheck|{timeout}")
                 elif action == "captcha_refresh":
                     from common import captcha_utils
                     captcha_char, captcha_img = captcha_utils.gen_random_image()

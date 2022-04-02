@@ -27,7 +27,7 @@ def do_captcha_ip(user_id, ip, captcha_char, captcha_img, reason, timeout=None):
 def trigger_forbidden_action(user_id, ip, reason, timeout=None):
     base_client = pool_utils.get_redis_cache()
     #刚刚被加白, 暂时不拉黑
-    if base_client.get(get_ip_allow(user_id, ip)) == 1:
+    if base_client.get(get_ip_nocheck(user_id, ip)) == 1:
         return
 
     if cache_utils.get_trigger_forbidden_action(user_id) == "captcha":
@@ -98,5 +98,5 @@ def get_online_client_ips(user_id):
 def get_project_name(user_id):
     return f"{user_id}:project_name"
 
-def get_ip_allow(user_id, ip):
-    return f"{user_id}:{ip}:allow"
+def get_ip_nocheck(user_id, ip):
+    return f"{user_id}:{ip}:nocheck"

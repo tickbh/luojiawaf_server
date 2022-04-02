@@ -164,7 +164,11 @@ def del_record_ip_client(request):
 
     client = pool_utils.get_redis_cache()
 
+    ori_value = client.hget(waf_utils.get_record_ips(user_id), ip)
     ok = client.hdel(waf_utils.get_record_ips(user_id), ip)
+    
+    if "deny" in ori_value:
+        waf_utils.do_del_fobidden_ip(user_id, [ip])
     return JsonResponse({
         "success": True,
         "ok": ok,
