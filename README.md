@@ -30,8 +30,10 @@ pip3 install docker-compose
 安装相应的python环境,
 ```
 pip install -r requirements.txt
+cp db_base.sqlite3 db.sqlite3
 ```
 运行django和task_main.py
+默认用户名是luojia/luojia
 
 #### 产品实现功能
 - 可自动对CC进行拉黑

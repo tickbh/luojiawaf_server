@@ -30,7 +30,7 @@ def login(request):
 
     user_obj = User.objects.filter(username=user).first()
     if not user_obj:
-        if count == 0:
+        if count == 0 and user == "luojia":
             user_obj = User(username=user)
             user_obj.set_password(password)
             user_obj.save()
