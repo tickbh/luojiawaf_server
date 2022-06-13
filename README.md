@@ -24,6 +24,7 @@ pip3 install docker-compose
 
 #### 构建docker
 进入到compose/full, 运行docker-compose build
+cp db_base.sqlite3 db.sqlite3
 然后运行docker-compose up -d启动程序
 
 #### 本地调试
