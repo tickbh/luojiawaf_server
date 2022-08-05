@@ -26,8 +26,10 @@ def statistics_request_msg(user_id):
                 base_client.incrby(f"{user_id}:cc_attack_cache_times", cc_attck_times)
                 base_client.incrby(f"{user_id}:{cc_key}", cc_attck_times)
                 client.delete(cc_key)
-
-            normal_cost = base_utils.mapgetall(client, "normal_all_cost")
+            try:
+                normal_cost = base_utils.mapgetall(client, "normal_all_cost")
+            except:
+                normal_cost = {}
             client.delete("normal_all_cost")
 
             pipe = base_client.pipeline()
