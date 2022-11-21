@@ -50,11 +50,15 @@ def get_client_detail(request):
     user_id = base_utils.get_user_id(request)
     ret_data = {}
     client_infos = {}
-    for (host, pool) in pool_utils.get_redis_client_cache_data(user_id).items():
+    base_client = pool_utils.get_redis_cache()
+    all_caches = base_utils.mapgetall(base_client, waf_utils.get_client_infos(user_id))
+    all_caches = [base_utils.safe_json(val) for info, val in all_caches.items()]
+    client = base_client
+    for cache in all_caches:
         try:
-            data = pool_utils.get_redis_data_cache(user_id, host)
-            client = redis.Redis(connection_pool=pool)
+            server_id = cache["server_id"]
             keys = [str.format("now_record_cost:{}", base_utils.get_last_hour_idx()), str.format("now_record_cost:{}", base_utils.get_last_hour_idx() -1)]
+            keys = [waf_utils.get_unique_key(server_id, key) for key in keys]
             times = client.mget(keys)
             client_times, client_cost_time = 0, 0
             
@@ -66,7 +70,7 @@ def get_client_detail(request):
                 client_times += now_times
                 client_cost_time += cost_time
                 
-            client_infos[data.get("name")] = {
+            client_infos[cache.get("name")] = {
                 "times": client_times,
                 "cost": client_cost_time
             }

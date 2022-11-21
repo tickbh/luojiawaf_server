@@ -1,17 +1,17 @@
 version: '3.5'
 services:
-  redis_back_db:
-    image: redis:6.2
-    container_name: redis_back-docker
-    volumes:
-      - ./store/redis/:/data:rw
-      - ../redis.conf:/usr/local/etc/redis/redis.conf
-      - ./store/redis/logs:/logs:rw
+  # redis_back_db:
+  #   image: redis:6.2
+  #   container_name: redis_back-docker
+  #   volumes:
+  #     - ./store/redis/:/data:rw
+  #     - ../redis.conf:/usr/local/etc/redis/redis.conf
+  #     - ./store/redis/logs:/logs:rw
 
-    command: redis-server /usr/local/etc/redis/redis.conf
-    ports:
-      - "127.0.0.1:6479:6479"
-    restart: always
+  #   command: redis-server /usr/local/etc/redis/redis.conf
+  #   ports:
+  #     - "127.0.0.1:6479:6479"
+  #   restart: always
 
   luojia_waf:
     container_name: luojia_waf-docker        # 指定容器的名称
