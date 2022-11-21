@@ -79,7 +79,7 @@ def get_client_detail(request):
         "client_infos": client_infos,
     })
 
-# 高防列表block
+# 服务器列表
 def get_block_list(request):
     user_id = base_utils.get_user_id(request)
     client = pool_utils.get_redis_cache()
@@ -91,21 +91,12 @@ def get_block_list(request):
 
 def add_block_client(request):
     user_id = base_utils.get_user_id(request)
-    name, host, oriname = base_utils.get_request_data(request, "name", "host", "oriname")
+    name, server_id, oriname = base_utils.get_request_data(request, "name", "server_id", "oriname")
     client = pool_utils.get_redis_cache()
-    if not host or not name:
+    if not server_id or not name:
         return base_utils.ret_err_msg(-1, "参数不正确")
-    try:
-        rds = redis.Redis.from_url(host, decode_responses=True)
-        ok = rds.ping()
-        if not ok:
-            raise
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return base_utils.ret_err_msg(-1, "无法连接该host")
+    info = json.dumps({"server_id": server_id, "name": name})
     
-    info = json.dumps({"host": host, "name": name})
     client.hset(waf_utils.get_client_infos(user_id), name, info)
     if oriname and oriname != name:
         client.hdel(waf_utils.get_client_infos(user_id), oriname)
@@ -115,6 +106,7 @@ def add_block_client(request):
         "info": info,
     })
 
+# 删除服务器列表
 def del_block_client(request):
     user_id = base_utils.get_user_id(request)
     name, _ = base_utils.get_request_data(request, "name", "_")
@@ -122,7 +114,6 @@ def del_block_client(request):
         return base_utils.ret_err_msg(-1, "参数不正确")
 
     client = pool_utils.get_redis_cache()
-
     ok = client.hdel(waf_utils.get_client_infos(user_id), name)
     return JsonResponse({
         "success": True,
@@ -344,14 +335,16 @@ def get_server_infos(request):
     name, is_hour = base_utils.get_request_data(request, "name", "is_hour")
     if not name:
         return base_utils.ret_err_msg(-1, "参数不正确")
-
-    client = pool_utils.get_redis_client_cache(base_utils.get_user_id(request), name)
+    
+    cache = pool_utils.get_redis_data_cache(base_utils.get_user_id(request), name)
+    server_id = base_utils.safe_json(cache).get("server_id", 0)
+    client = pool_utils.get_redis_cache()
     if not client:
         return base_utils.ret_err_msg(-1, "该高防不存在")
 
-    cpu_infos = client.lrange("all_cpu_info", -180, -1)
-    network_infos = client.lrange("all_network_info", -180, -1)
-    mem_infos = client.lrange("all_mem_info", -180, -1)
+    cpu_infos = client.lrange(waf_utils.get_unique_key(server_id, "all_cpu_info") , -180, -1)
+    network_infos = client.lrange(waf_utils.get_unique_key(server_id, "all_network_info"), -180, -1)
+    mem_infos = client.lrange(waf_utils.get_unique_key(server_id, "all_mem_info"), -180, -1)
 
     return JsonResponse({
         "success": True,

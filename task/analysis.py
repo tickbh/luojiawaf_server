@@ -51,13 +51,17 @@ def analysis_request_msg(user_id):
     if len(all_news) == 0:
         return
 
+    min_len = cache_utils.get_cache_wait_forbidden_min_len(user_id)
+    
     for (k, v) in all_news.items():
         is_forbidden = False
         all_visit_table = {}
         last_url = ""
-        last_access_time = 0
+        last_access_time = math.floor(time.time())
         while True:
             if is_forbidden:
+                break
+            if (base_client.llen("client_ip_list:" + k) or 0) < min_len:
                 break
             visit_list = base_client.execute_command(
                 "lpop", "client_ip_list:" + k, 1000)
@@ -90,7 +94,6 @@ def analysis_request_msg(user_id):
             continue
         
         not_wait_count, all_count = calc_not_wait_count(all_visit_table)
-        min_len = cache_utils.get_cache_wait_forbidden_min_len(user_id)
         if all_count < min_len:
             continue
         ratio = cache_utils.get_cache_wait_forbidden_ratio(user_id)

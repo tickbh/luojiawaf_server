@@ -16,7 +16,6 @@ from common import log_utils, config_utils
 def sync_request_msg_task(times, *args, **kwargs):
     logging.warning("start sync_request_msg_task")
     for user in User.objects.filter():
-        sync.sync_request_msg(user.id)
         sync.sync_to_client(user.id)
     logging.warning("end sync_request_msg_task")
 
@@ -50,9 +49,7 @@ def do_start_task(idx=None):
         }
     }
 
-    connection_details=[
-        {'host': 'redis_back_db', 'port': 6479, 'db': 15},
-    ]
+    connection_details=task_redis
     lock_data = {
         "t": "rllock",
         "reentrant":True, 

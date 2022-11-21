@@ -38,30 +38,38 @@ def get_redis_client_cache_data(user_id):
 
 
 def iter_redis_client_cache_data(user_id):
-    datas = get_redis_client_cache_data(user_id)
-    for _, pool in datas.items():
-        yield redis.Redis(connection_pool=pool)
+    yield get_redis_cache()
+    # datas = get_redis_client_cache_data(user_id)
+    # for _, pool in datas.items():
+    #     yield redis.Redis(connection_pool=pool)
 
 
 def get_redis_client_cache(user_id, name):
-    global _redis_online_config_cache
+    return get_redis_cache()
+    # global _redis_online_config_cache
     
-    user_cache = _redis_online_config_cache.get(user_id, {})
+    # user_cache = _redis_online_config_cache.get(user_id, {})
 
-    if user_cache.get(name) == None:
-        pool = get_redis_client_cache_data(user_id).get(name)
-        if not pool:
-            return None
-        return redis.Redis(connection_pool=pool)
-    return redis.Redis(connection_pool=user_cache.get(name))
+    # if user_cache.get(name) == None:
+    #     pool = get_redis_client_cache_data(user_id).get(name)
+    #     if not pool:
+    #         return None
+    #     return redis.Redis(connection_pool=pool)
+    # return redis.Redis(connection_pool=user_cache.get(name))
 
 
 def get_redis_data_cache(user_id, name):
     global _redis_config_cache_names
-    
+    get_redis_client_cache_data(user_id)
     user_cache = _redis_config_cache_names.get(user_id, {})
     return user_cache.get(name, {})
 
 def do_client_command(user_id, *args, **options):
-    for client in iter_redis_client_cache_data(user_id):
-        client.execute_command(*args, **options)
+    from common import pool_utils    
+    base_client = pool_utils.get_redis_cache()
+    base_client.execute_command(*args, **options)
+    
+def do_client_incr_version(user_id, key):
+    from common import pool_utils    
+    base_client = pool_utils.get_redis_cache()
+    base_client.incr(f"version_{key}", 1)

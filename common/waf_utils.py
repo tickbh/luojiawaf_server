@@ -1,10 +1,13 @@
-import time
+import time, math
 from common import pool_utils, cache_utils, base_utils
 
 def do_forbidden_ip(user_id, ip, reason, timeout=None):
     if not timeout:
         timeout = cache_utils.get_default_forbidden_time(user_id)
+        
+    timeout = math.floor(time.time()) + timeout
     pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"add|{timeout}")
+    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
     base_client = pool_utils.get_redis_cache()
     base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
     base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
@@ -18,8 +21,10 @@ def do_captcha_ip(user_id, ip, captcha_char, captcha_img, reason, timeout=None):
     pool_utils.do_client_command(user_id, "set", f"result_{captcha_key}", captcha_char, "EX", timeout + 100)
     pool_utils.do_client_command(user_id, "set", f"image_{captcha_key}", captcha_img, "EX", timeout + 60)
     
+    timeout = math.floor(time.time()) + timeout
     pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"captcha|{timeout}|{captcha_key}")
 
+    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
     base_client = pool_utils.get_redis_cache()
     base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
     base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
@@ -44,6 +49,7 @@ def do_del_fobidden_ip(user_id, ip_list):
         new_ip_list.append("del")
 
     pool_utils.do_client_command(user_id, "hmset", "all_ip_changes", *new_ip_list)
+    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
 
 def get_forbidden_key(user_id):
     return f"{user_id}:now_forbidden_range"
@@ -77,6 +83,9 @@ def get_rulelimit_infos(user_id):
 
 def get_upstream_all_cost(user_id, hour_idx):
     return f"{user_id}:upstream_all_cost:{hour_idx}"
+
+def get_unique_key(server_id, key):
+   return f"server{server_id}:{key}" 
 
 def get_cc_attack_cache_times(user_id, day_idx = None):
     if not day_idx:

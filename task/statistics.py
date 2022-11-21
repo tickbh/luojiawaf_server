@@ -8,11 +8,13 @@ from task.accessurl import AccessUrl, calc_not_wait_count
 
 def statistics_request_msg(user_id):
     base_client = pool_utils.get_redis_cache()
-
-    for client in pool_utils.iter_redis_client_cache_data(user_id):
+    all_caches = base_utils.mapgetall(base_client, waf_utils.get_client_infos(user_id))
+    all_caches = [base_utils.safe_json(val) for info, val in all_caches.items()]
+    client = base_client
+    for cache in all_caches:
         try:
-            upstream_cost = base_utils.mapgetall(client, "upstream_all_cost")
-            client.delete("upstream_all_cost")
+            upstream_cost = base_utils.mapgetall(client, waf_utils.get_unique_key(cache["server_id"], "upstream_all_cost") )
+            client.delete(waf_utils.get_unique_key(cache["server_id"], "upstream_all_cost"))
             pipe = base_client.pipeline()
             key = waf_utils.get_upstream_all_cost(user_id, base_utils.get_last_hour_idx())
             for (k, v) in upstream_cost.items():
@@ -27,10 +29,10 @@ def statistics_request_msg(user_id):
                 base_client.incrby(f"{user_id}:{cc_key}", cc_attck_times)
                 client.delete(cc_key)
             try:
-                normal_cost = base_utils.mapgetall(client, "normal_all_cost")
+                normal_cost = base_utils.mapgetall(client, waf_utils.get_unique_key(cache["server_id"], "normal_all_cost"))
             except:
                 normal_cost = {}
-            client.delete("normal_all_cost")
+            client.delete(waf_utils.get_unique_key(cache["server_id"], "normal_all_cost"))
 
             pipe = base_client.pipeline()
             url_list = []
