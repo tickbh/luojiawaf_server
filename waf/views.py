@@ -671,7 +671,15 @@ def get_client_attack_visits(request):
     pagecount = base_utils.safe_int(pagecount, 20)
 
     key = "client_attack_url_all"
-    datas = client.lrange(key, (page - 1) * pagecount, page * pagecount - 1)
+    datas = client.execute_command("lrange", key, (page - 1) * pagecount, page * pagecount - 1, NEVER_DECODE=1)
+    def safe_value(data):
+        try:
+            return bytes.decode(data, "utf-8")
+        except:
+            import base64
+            return bytes.decode(base64.b64encode(data), "utf-8")
+    datas = [safe_value(data) for data in datas]
+    # datas = client.lrange(key, (page - 1) * pagecount, page * pagecount - 1)
     count = client.llen(key)
     return JsonResponse({
         "success": True,
