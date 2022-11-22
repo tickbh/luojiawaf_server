@@ -86,6 +86,10 @@ DATABASES = {
     }
 }
 
+import os.path
+if not os.path.isfile(BASE_DIR / 'db.sqlite3'):
+    import shutil
+    shutil.copyfile(BASE_DIR / 'db_base.sqlite3', BASE_DIR / 'db.sqlite3')
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
