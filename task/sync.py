@@ -8,7 +8,8 @@ def sync_all_upstream_infos(user_id):
 
     upstream_infos = base_utils.mapgetall(base_client, waf_utils.get_upstream_infos(user_id))
     if not upstream_infos:
-        return;
+        return
+    
     cache_md5 = base_utils.calc_md5(base_utils.safe_str(upstream_infos))
     for client in pool_utils.iter_redis_client_cache_data(user_id):
         try:
@@ -22,6 +23,8 @@ def sync_all_upstream_infos(user_id):
             pipe.rename(key + "bak", key)
             pipe.set(cache_key, cache_md5)
             ok = pipe.execute()
+            
+            pool_utils.do_client_incr_version(user_id, "all_upstream_infos")
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -44,6 +47,7 @@ def sync_all_records_ip_infos(user_id):
             pipe.rename("all_record_ips_bak", "all_record_ips")
             pipe.set(cache_key, cache_md5)
             ok = pipe.execute()
+            pool_utils.do_client_incr_version(user_id, "all_record_ips")
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -66,6 +70,8 @@ def sync_all_whiteurl_infos(user_id):
             pipe.rename("all_white_urls_bak", "all_white_urls")
             pipe.set(cache_key, cache_md5)
             ok = pipe.execute()
+            
+            pool_utils.do_client_incr_version(user_id, "all_white_urls")
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -88,6 +94,8 @@ def sync_all_ssl_infos(user_id):
             pipe.rename("all_ssl_infos_bak", "all_ssl_infos")
             pipe.set(cache_key, cache_md5)
             ok = pipe.execute()
+            
+            pool_utils.do_client_incr_version(user_id, "all_ssl_infos")
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -112,6 +120,7 @@ def sync_all_config_infos(user_id):
             pipe.set(cache_key, cache_md5)
             ok = pipe.execute()
             
+            pool_utils.do_client_incr_version(user_id, "all_config_infos")
         except Exception as e:
             import traceback
             traceback.print_exc()

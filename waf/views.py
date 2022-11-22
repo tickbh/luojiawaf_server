@@ -189,6 +189,9 @@ def add_whiteurl_client(request):
     client.hset(waf_utils.get_white_urls(user_id), url, action)
     if oriurl and oriurl != url:
         client.hdel(waf_utils.get_white_urls(user_id), oriurl)
+        
+        
+    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
 
     return JsonResponse({
         "success": True,
