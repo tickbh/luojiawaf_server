@@ -63,8 +63,9 @@ def analysis_request_msg(user_id):
                 break
             if (base_client.llen("client_ip_list:" + k) or 0) < min_len:
                 break
-            visit_list = base_client.execute_command(
-                "lpop", "client_ip_list:" + k, 1000)
+            visit_list = base_client.lrange("client_ip_list:" + k, 0, 1000)
+            _ = base_client.ltrim("client_ip_list:" + k, 1000, -1)
+            
             if not visit_list:
                 break
             for v in visit_list:
