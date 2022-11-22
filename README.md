@@ -21,17 +21,19 @@ pip config set global.index-url http://mirrors.aliyun.com/pypi/simple
 pip config set install.trusted-host mirrors.aliyun.com
 pip3 install docker-compose
 ```
-
+#### 后台前端
+luojia_web_publish.zip 是编译好的后台前端, 解压到上级目录
+```
+unzip luojia_web_publish.zip ../
+```
 #### 构建docker
 进入到compose/full, 运行docker-compose build
-cp db_base.sqlite3 db.sqlite3
 然后运行docker-compose up -d启动程序
 
 #### 本地调试
 安装相应的python环境,
 ```
 pip install -r requirements.txt
-cp db_base.sqlite3 db.sqlite3
 ```
 运行django和task_main.py
 默认用户名是luojia/luojia
