@@ -7,7 +7,7 @@ def do_forbidden_ip(user_id, ip, reason, timeout=None):
         
     timeout = math.floor(time.time()) + timeout
     pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"add|{timeout}")
-    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
+    pool_utils.do_client_incr_version("all_ip_changes")
     base_client = pool_utils.get_redis_cache()
     base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
     base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
@@ -24,7 +24,7 @@ def do_captcha_ip(user_id, ip, captcha_char, captcha_img, reason, timeout=None):
     timeout = math.floor(time.time()) + timeout
     pool_utils.do_client_command(user_id, "hset", "all_ip_changes", ip, f"captcha|{timeout}|{captcha_key}")
 
-    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
+    pool_utils.do_client_incr_version("all_ip_changes")
     base_client = pool_utils.get_redis_cache()
     base_client.zadd(get_forbidden_key(user_id), {ip:time.time()})
     base_client.set(get_forbidden_reason_key(user_id, ip), reason, ex=86400)
@@ -44,18 +44,22 @@ def trigger_forbidden_action(user_id, ip, reason, timeout=None):
     
 def do_del_fobidden_ip(user_id, ip_list):
     new_ip_list = []
+    now_time = math.floor(time.time()) 
     for ip in ip_list:
         new_ip_list.append(ip)
-        new_ip_list.append("del")
+        new_ip_list.append(f"del|{now_time + 1200}")
 
     pool_utils.do_client_command(user_id, "hmset", "all_ip_changes", *new_ip_list)
-    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
+    pool_utils.do_client_incr_version("all_ip_changes")
 
 def get_forbidden_key(user_id):
     return f"{user_id}:now_forbidden_range"
 
 def get_forbidden_reason_key(user_id, ip):
     return f"{user_id}:reason_forbidden:{ip}"
+
+def get_ip_changes(user_id):
+    return f"{user_id}:all_ip_changes"
 
 def get_config_infos(user_id):
     return f"{user_id}:all_config_infos"

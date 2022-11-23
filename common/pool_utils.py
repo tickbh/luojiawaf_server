@@ -69,7 +69,18 @@ def do_client_command(user_id, *args, **options):
     base_client = pool_utils.get_redis_cache()
     base_client.execute_command(*args, **options)
     
-def do_client_incr_version(user_id, key):
+def client_version_key(key):
+    return f"version_{key}"
+
+def user_version_key(user_id, key):
+    return f"{user_id}:version_{key}"
+    
+def do_client_incr_version(key):
     from common import pool_utils    
     base_client = pool_utils.get_redis_cache()
-    base_client.incr(f"version_{key}", 1)
+    base_client.incrby(client_version_key(key), 1)
+    
+def do_user_incr_version(user_id, key):
+    from common import pool_utils    
+    base_client = pool_utils.get_redis_cache()
+    base_client.incrby(user_version_key(user_id, key), 1)

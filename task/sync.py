@@ -1,133 +1,58 @@
 import math
-
+import time
 import redis
 from common import base_utils, config_utils, pool_utils, waf_utils, cache_utils
 
-def sync_all_upstream_infos(user_id):
+def syn_info_by_keys(user_id, key):
+    now_key = key
     base_client = pool_utils.get_redis_cache()
-
-    upstream_infos = base_utils.mapgetall(base_client, waf_utils.get_upstream_infos(user_id))
-    if not upstream_infos:
+    user_version = base_client.get(pool_utils.user_version_key(user_id, now_key))
+    if not user_version:
         return
-    
-    cache_md5 = base_utils.calc_md5(base_utils.safe_str(upstream_infos))
+
+    value = base_client.get(pool_utils.client_version_key(now_key))
+    if value == user_version:
+        return
+    infos = base_utils.mapgetall(base_client, f"{user_id}:{now_key}")
     for client in pool_utils.iter_redis_client_cache_data(user_id):
         try:
-            cache_key = "cache:all_upstream_infos"
-            value = client.get(cache_key)
-            if value == cache_md5:
+            value = client.get(pool_utils.client_version_key(now_key))
+            if value == user_version:
                 continue 
-            key = f"all_upstream_infos"
             pipe = client.pipeline()
-            pipe.hset(key + "bak", mapping=upstream_infos)
-            pipe.rename(key + "bak", key)
-            pipe.set(cache_key, cache_md5)
+            pipe.hset(f"{now_key}_bak", mapping=infos)
+            pipe.rename(f"{now_key}_bak", now_key)
+            pipe.set(pool_utils.client_version_key(now_key), user_version)
             ok = pipe.execute()
             
-            pool_utils.do_client_incr_version(user_id, "all_upstream_infos")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-def sync_all_records_ip_infos(user_id):
-    base_client = pool_utils.get_redis_cache()
-    all_record_ips = base_utils.mapgetall(base_client, waf_utils.get_record_ips(user_id))
-    if len(all_record_ips) == 0:
-        return
-
-    cache_md5 = base_utils.calc_md5(base_utils.safe_str(all_record_ips))
-    for client in pool_utils.iter_redis_client_cache_data(user_id):
-        try:
-            cache_key = "cache:all_record_ips"
-            value = client.get(cache_key)
-            if value == cache_md5:
-                continue 
-            pipe = client.pipeline()
-            pipe.hset("all_record_ips_bak", mapping=all_record_ips)
-            pipe.rename("all_record_ips_bak", "all_record_ips")
-            pipe.set(cache_key, cache_md5)
-            ok = pipe.execute()
-            pool_utils.do_client_incr_version(user_id, "all_record_ips")
         except Exception as e:
             import traceback
             traceback.print_exc()
             
-def sync_all_whiteurl_infos(user_id):
-    base_client = pool_utils.get_redis_cache()
-    all_white_urls = base_utils.mapgetall(base_client, waf_utils.get_white_urls(user_id))
-    if len(all_white_urls) == 0:
-        return
-
-    cache_md5 = base_utils.calc_md5(base_utils.safe_str(all_white_urls))
-    for client in pool_utils.iter_redis_client_cache_data(user_id):
-        try:
-            cache_key = "cache:all_white_urls"
-            value = client.get(cache_key)
-            if value == cache_md5:
-                continue 
-            pipe = client.pipeline()
-            pipe.hset("all_white_urls_bak", mapping=all_white_urls)
-            pipe.rename("all_white_urls_bak", "all_white_urls")
-            pipe.set(cache_key, cache_md5)
-            ok = pipe.execute()
             
-            pool_utils.do_client_incr_version(user_id, "all_white_urls")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-def sync_all_ssl_infos(user_id):
+def syn_clear_ip_timeout(user_id):
+    now_key = "all_ip_changes"
     base_client = pool_utils.get_redis_cache()
-    all_ssl_infos = base_utils.mapgetall(base_client, waf_utils.get_ssl_infos(user_id))
-    if len(all_ssl_infos) == 0:
-        return
-
-    cache_md5 = base_utils.calc_md5(base_utils.safe_str(all_ssl_infos))
-    for client in pool_utils.iter_redis_client_cache_data(user_id):
-        try:
-            cache_key = "cache:all_ssl_infos"
-            value = client.get(cache_key)
-            if value == cache_md5:
-                continue 
-            pipe = client.pipeline()
-            pipe.hset("all_ssl_infos_bak", mapping=all_ssl_infos)
-            pipe.rename("all_ssl_infos_bak", "all_ssl_infos")
-            pipe.set(cache_key, cache_md5)
-            ok = pipe.execute()
+    infos = base_utils.mapgetall(base_client, now_key)
+    del_keys = []
+    for k, v in infos.items():
+        temps = v.split("|")
+        if len(temps) < 2:
+            del_keys.append(k)
+        else:
+            timeout = base_utils.safe_int(temps[1])
+            if timeout < time.time():
+                del_keys.append(k)
+                
+    if len(del_keys) > 0:
+        base_client.hdel(now_key, *del_keys)
             
-            pool_utils.do_client_incr_version(user_id, "all_ssl_infos")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-def sync_all_config_infos(user_id):
-    base_client = pool_utils.get_redis_cache()
-    
-    all_config_data = base_utils.mapgetall(base_client, waf_utils.get_config_infos(user_id))
-    if len(all_config_data) == 0:
-        return
-
-    cache_md5 = base_utils.calc_md5(base_utils.safe_str(all_config_data))
-    for client in pool_utils.iter_redis_client_cache_data(user_id):
-        try:
-            cache_key = "cache:all_config_infos"
-            value = client.get(cache_key)
-            if value == cache_md5:
-                continue 
-            pipe = client.pipeline()
-            pipe.hset("all_config_infos_bak", mapping=all_config_data)
-            pipe.rename("all_config_infos_bak", "all_config_infos")
-            pipe.set(cache_key, cache_md5)
-            ok = pipe.execute()
-            
-            pool_utils.do_client_incr_version(user_id, "all_config_infos")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
 
 def sync_to_client(user_id):
-    sync_all_upstream_infos(user_id)
-    sync_all_records_ip_infos(user_id)
-    sync_all_whiteurl_infos(user_id)
-    sync_all_config_infos(user_id)
-    sync_all_ssl_infos(user_id)
+    syn_info_by_keys(user_id, "all_upstream_infos")
+    syn_info_by_keys(user_id, "all_record_ips")
+    syn_info_by_keys(user_id, "all_white_urls")
+    syn_info_by_keys(user_id, "all_config_infos")
+    syn_info_by_keys(user_id, "all_ssl_infos")
+    
+    syn_clear_ip_timeout(user_id)

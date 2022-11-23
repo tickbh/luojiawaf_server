@@ -145,7 +145,7 @@ def add_record_ip_client(request):
     client.hset(waf_utils.get_record_ips(user_id), ip, action)
     if oriip and oriip != ip:
         client.hdel(waf_utils.get_record_ips(user_id), oriip)
-
+    pool_utils.do_user_incr_version(user_id, "all_record_ips")
     return JsonResponse({
         "success": True,
         "ip": ip,
@@ -162,6 +162,7 @@ def del_record_ip_client(request):
     ori_value = client.hget(waf_utils.get_record_ips(user_id), ip)
     ok = client.hdel(waf_utils.get_record_ips(user_id), ip)
     
+    pool_utils.do_user_incr_version(user_id, "all_record_ips")
     if "deny" in ori_value:
         waf_utils.do_del_fobidden_ip(user_id, [ip])
     return JsonResponse({
@@ -190,8 +191,7 @@ def add_whiteurl_client(request):
     if oriurl and oriurl != url:
         client.hdel(waf_utils.get_white_urls(user_id), oriurl)
         
-        
-    pool_utils.do_client_incr_version(user_id, "all_ip_changes")
+    pool_utils.do_user_incr_version(user_id, "all_white_urls")
 
     return JsonResponse({
         "success": True,
@@ -207,6 +207,7 @@ def del_whiteurl_client(request):
     client = pool_utils.get_redis_cache()
 
     ok = client.hdel(waf_utils.get_white_urls(user_id), url)
+    pool_utils.do_user_incr_version(user_id, "all_white_urls")
     return JsonResponse({
         "success": True,
         "ok": ok,
@@ -270,6 +271,7 @@ def get_config_list(request):
     })
 
 def add_config_info(request):
+    user_id = base_utils.get_user_id(request)
     key, value = base_utils.get_request_data(request, "key1", "value")
     if not key or not value:
         return base_utils.ret_err_msg(-1, "参数不正确")
@@ -290,12 +292,14 @@ def add_config_info(request):
         # client.set(key, value)
 
     client.hset(config_key, key, value)
+    pool_utils.do_user_incr_version(user_id, "all_config_infos")
     return JsonResponse({
         "success": True,
         "name": key,
     })
 
 def del_config_info(request):
+    user_id = base_utils.get_user_id(request)
     key, _ = base_utils.get_request_data(request, "key1", "_")
     if not key:
         return base_utils.ret_err_msg(-1, "参数不正确")
@@ -306,6 +310,7 @@ def del_config_info(request):
 
     config_key = waf_utils.get_config_infos(base_utils.get_user_id(request))
     ok = client.hdel(config_key, key)
+    pool_utils.do_user_incr_version(user_id, "all_config_infos")
     return JsonResponse({
         "success": True,
         "name": key,
@@ -443,6 +448,8 @@ def add_upstream_client(request):
 
     if oriname and oriname != name:
         client.hdel(waf_utils.get_upstream_infos(user_id), oriname)
+    
+    pool_utils.do_user_incr_version(user_id, "all_upstream_infos")
 
     return JsonResponse({
         "success": True,
@@ -457,6 +464,7 @@ def del_upstream_client(request):
     client = pool_utils.get_redis_cache()
     user_id = base_utils.get_user_id(request)
     ok = client.hdel(waf_utils.get_upstream_infos(user_id), name)
+    pool_utils.do_user_incr_version(user_id, "all_upstream_infos")
     return JsonResponse({
         "success": True,
         "ok": ok,
@@ -488,6 +496,8 @@ def add_ssl_client(request):
     client.hset(waf_utils.get_ssl_infos(user_id), name, info)
     if oriname and oriname != name:
         client.hdel(waf_utils.get_ssl_infos(user_id), oriname)
+        
+    pool_utils.do_user_incr_version(user_id, "all_ssl_infos")
     return JsonResponse({
         "success": True,
         "info": info,
@@ -501,6 +511,7 @@ def del_ssl_client(request):
 
     client = pool_utils.get_redis_cache()
     ok = client.hdel(waf_utils.get_ssl_infos(user_id), host)
+    pool_utils.do_user_incr_version(user_id, "all_ssl_infos")
     return JsonResponse({
         "success": True,
     })

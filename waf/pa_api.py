@@ -21,7 +21,7 @@ def login(request):
     ip = base_utils.get_ip(request)
     key = str.format("auth_key_{}_{}", base_utils.get_cyclical_idx(60), ip)
     client = pool_utils.get_redis_cache()
-    count = client.incr(key)
+    count = client.incrby(key, 1)
     client.expire(key, 120)
     if count > 30:
         return base_utils.ret_err_msg(-1, "慢一点,你输入的太快了", errData)
