@@ -57,19 +57,24 @@ def analysis_request_msg(user_id):
         is_forbidden = False
         all_visit_table = {}
         last_url = ""
+        first_access_time = 9999999999
+        all_visit_size = 0
         last_access_time = math.floor(time.time())
         while True:
             if is_forbidden:
                 break
             if (base_client.llen("client_ip_list:" + k) or 0) < min_len:
                 break
+            
             visit_list = base_client.lrange("client_ip_list:" + k, 0, 1000)
             _ = base_client.ltrim("client_ip_list:" + k, 1000, -1)
             
             if not visit_list:
                 break
-            for v in visit_list:
+            all_visit_size += len(visit_list)
+            for i, v in enumerate(visit_list):
                 access = AccessUrl(v)
+                first_access_time = min(first_access_time, access.access)
                 last_url = access.url
                 if all_visit_table.get(access.url) == None:
                     all_visit_table[access.url] = []
@@ -101,13 +106,16 @@ def analysis_request_msg(user_id):
         if not_wait_count / all_count > ratio:
             waf_utils.trigger_forbidden_action(user_id, k, f"同一条请求未完成又重复请求占比 {not_wait_count / all_count}, 总次数 {all_count}")
             continue
+        
+        # 频繁在0.5秒一条内, 则均判定是正常
+        if (last_access_time - first_access_time) / all_visit_size > 0.5:
+            continue
 
         ip_url_times = base_utils.mapgetall(base_client, "client_ip_times:" + k)
-        all_visit_times = 0
         last_visit_counts = ip_url_times.get(last_url or "",  0)
         max_request_times = 0
         second_times = 0
-
+        all_visit_times = 0
         sort_times_list = []
 
         for (url, times) in ip_url_times.items():
