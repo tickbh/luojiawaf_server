@@ -341,6 +341,7 @@ def get_error_list(request):
     return JsonResponse({
         "success": True,
         "datas": datas,
+        "count": count,
     })
     
 def get_server_infos(request):
