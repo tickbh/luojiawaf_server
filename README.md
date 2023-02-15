@@ -21,6 +21,12 @@ pip config set global.index-url http://mirrors.aliyun.com/pypi/simple
 pip config set install.trusted-host mirrors.aliyun.com
 pip3 install docker-compose
 ```
+#### 配置文件
+填写相应的配置信息, 如果自建库redis或者用云的redis之类的
+```
+cp common/config.yaml config_local.yaml
+更改redis数据库的数据库连接
+```
 #### 后台前端
 luojia_web_publish.zip 是编译好的后台前端, 解压到上级目录
 ```
